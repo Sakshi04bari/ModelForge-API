@@ -1,52 +1,81 @@
 # ⚒️ ModelForge API
 
-🌸 Iris Species Classifier API
 > A production-style REST API that serves a machine learning model — built to
 > demonstrate ML engineering practice, not just model training.
+>
+> Repo: `modelforge-api` &nbsp;|&nbsp; Current model: Iris species classifier
+
 [![Status](https://img.shields.io/badge/status-planning-yellow)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-green)]()
+
 ---
-📌 Project Summary
-	
-Problem type	Multi-class classification
-Dataset	Iris — 150 samples, 4 features, 3 balanced classes
-Deliverable	A `/predict` REST endpoint served over HTTP
-Focus	API design, input validation, error handling, project structure — not model complexity
-This project deliberately uses a small, well-understood dataset. The goal
-isn't to build a state-of-the-art classifier — it's to build the service
-around a model the way it would be built in production: with a clear
+
+## 📌 Project Summary
+
+| | |
+|---|---|
+| **Project** | ModelForge API — a reusable pattern for serving ML models as REST endpoints |
+| **Problem type** | Multi-class classification |
+| **Dataset (current model)** | [Iris](https://archive.ics.uci.edu/dataset/53/iris) — 150 samples, 4 features, 3 balanced classes |
+| **Deliverable** | A `/predict` REST endpoint served over HTTP |
+| **Focus** | API design, input validation, error handling, project structure — *not* model complexity |
+
+**ModelForge** is where a raw, trained model gets shaped into a properly
+engineered, deployable service. This first version wraps a small,
+well-understood dataset (Iris) intentionally — the goal isn't a
+state-of-the-art classifier, it's the **service** around it: a clear
 contract, validated inputs, predictable responses, and a repo structure
-that scales past a single notebook.
+that scales past a single notebook and past this first dataset.
+
 ---
-🧠 Model vs. Service
+
+## 🧠 Model vs. Service
+
 A recurring theme of this project:
-The model is a pure function — four numbers in, one label out. It has
-no concept of HTTP, JSON, or bad input.
-The service is everything around it — parsing requests, validating
-data, calling the model safely, formatting a response, and returning the
-right status code when something goes wrong.
+
+- **The model** is a pure function — four numbers in, one label out. It has
+  no concept of HTTP, JSON, or bad input.
+- **The service** is everything around it — parsing requests, validating
+  data, calling the model safely, formatting a response, and returning the
+  right status code when something goes wrong.
+
 Task 1 is entirely about designing the service, before any model code exists.
+
 ---
-📂 Dataset
-Iris flower dataset (`iris_dataset.csv`) — the classic, widely-used
+
+## 📂 Dataset
+
+**Iris flower dataset** (`iris_dataset.csv`) — the classic, widely-used
 benchmark dataset for classification.
-Feature	Type	Unit
-`sepal_length`	float	cm
-`sepal_width`	float	cm
-`petal_length`	float	cm
-`petal_width`	float	cm
-`species` (target)	categorical	`setosa` / `versicolor` / `virginica`
-150 rows, no missing values, 3 perfectly balanced classes.
-Chosen so data cleaning never competes for attention with API design.
-The three species
-Iris setosa	Iris versicolor	Iris virginica
-![Iris setosa](https://upload.wikimedia.org/wikipedia/commons/5/56/Kosaciec_szczecinkowaty_Iris_setosa.jpg)	![Iris versicolor](https://upload.wikimedia.org/wikipedia/commons/4/41/Iris_versicolor_3.jpg)	![Iris virginica](https://upload.wikimedia.org/wikipedia/commons/9/9f/Iris_virginica.jpg)
-Images: Wikimedia Commons.
+
+| Feature | Type | Unit |
+|---|---|---|
+| `sepal_length` | float | cm |
+| `sepal_width` | float | cm |
+| `petal_length` | float | cm |
+| `petal_width` | float | cm |
+| `species` (target) | categorical | `setosa` / `versicolor` / `virginica` |
+
+- 150 rows, no missing values, 3 perfectly balanced classes.
+- Chosen so data cleaning never competes for attention with API design.
+
+### The three species
+
+| Iris setosa | Iris versicolor | Iris virginica |
+|---|---|---|
+| ![Iris setosa](https://upload.wikimedia.org/wikipedia/commons/5/56/Kosaciec_szczecinkowaty_Iris_setosa.jpg) | ![Iris versicolor](https://upload.wikimedia.org/wikipedia/commons/4/41/Iris_versicolor_3.jpg) | ![Iris virginica](https://upload.wikimedia.org/wikipedia/commons/9/9f/Iris_virginica.jpg) |
+
+*Images: Wikimedia Commons.*
+
 ---
-📜 API Contract
-`POST /predict`
-Request
+
+## 📜 API Contract
+
+### `POST /predict`
+
+**Request**
+
 ```json
 {
   "sepal_length": 5.1,
@@ -55,29 +84,38 @@ Request
   "petal_width": 0.2
 }
 ```
-All four fields are required, must be numeric, and must be positive
+
+All four fields are **required**, must be numeric, and must be positive
 (measurements in centimeters).
-Response — `200 OK`
+
+**Response — `200 OK`**
+
 ```json
 {
   "species": "setosa",
   "confidence": 0.98
 }
 ```
-Response — `422 Unprocessable Entity` (validation failure)
+
+**Response — `422 Unprocessable Entity`** (validation failure)
+
 ```json
 {
   "error": "petal_width must be a positive number",
   "field": "petal_width"
 }
 ```
-In plain English: the client sends four flower measurements; the API
+
+**In plain English:** the client sends four flower measurements; the API
 returns its best-guess species and a confidence score. If the input is
 missing a field, isn't numeric, or is out of a sane range, the request
 fails fast with a `422` naming the exact bad field — it never silently
 guesses, and it never lets bad data reach the model.
+
 ---
-🔄 Request Lifecycle
+
+## 🔄 Request Lifecycle
+
 ```
 Client
   │  POST /predict  { sepal_length, sepal_width, petal_length, petal_width }
@@ -104,15 +142,19 @@ Client
            ▼
 Client receives prediction
 ```
-Key design decision: validation is a hard gate before the model is
+
+**Key design decision:** validation is a hard gate *before* the model is
 ever invoked. The model is never responsible for defending itself against
 malformed input — that's the API layer's job.
+
 ---
-🗂️ Planned Project Structure
-Structured following Cookiecutter Data Science
-conventions, adapted for an API-serving project:
+
+## 🗂️ Planned Project Structure
+
+Structured using a clean, production-ready project layout, adapted specifically for an ML API-serving project.
+
 ```
-iris-classifier-api/
+modelforge-api/
 ├── README.md               <- You are here
 ├── requirements.txt          <- Pinned dependencies
 ├── pyproject.toml            <- Project metadata & tool config
@@ -138,27 +180,45 @@ iris-classifier-api/
     ├── test_validation.py       <- Input validation unit tests
     └── test_api.py               <- Endpoint integration tests
 ```
+
 This structure is the target for Task 2 onward — this repo currently
 contains only the planning artifact (this README).
+
 ---
-✅ Task 1 Completion Checklist
-[x] Dataset selected: Iris (`iris_dataset.csv`)
-[x] Problem scoped: single-endpoint, 3-class classification
-[x] Input / output contract defined in plain English
-[x] Request → validation → model → response flow diagrammed
-[x] Repo initialized with first commit (this README)
-🚧 Roadmap
-[ ] Task 2 — Scaffold folder structure + Python environment
-[ ] Task 3 — Train & serialize the classification model
-[ ] Task 4 — Implement `/predict` with request validation
-[ ] Task 5 — Add tests, error handling, and logging
-[ ] Task 6 — Containerize and document deployment
+
+## ✅ Task 1 Completion Checklist
+
+- [x] Repo named and scoped: **ModelForge API**
+- [x] Dataset selected for v1 model: **Iris** (`iris_dataset.csv`)
+- [x] Problem scoped: single-endpoint, 3-class classification
+- [x] Input / output contract defined in plain English
+- [x] Request → validation → model → response flow diagrammed
+- [x] Repo initialized with first commit (this README)
+
+## 🚧 Roadmap
+
+- [ ] **Task 2** — Scaffold folder structure + Python environment
+- [ ] **Task 3** — Train & serialize the classification model
+- [ ] **Task 4** — Implement `/predict` with request validation
+- [ ] **Task 5** — Add tests, error handling, and logging
+- [ ] **Task 6** — Containerize and document deployment
+
 ---
-🤔 Why Iris?
-Small & clean — 150 rows, zero missing values, no data-engineering detour.
-Well understood — if the API misbehaves, it's the API's fault, not a confusing dataset.
-Genuine multi-class problem — enough complexity to exercise validation and response design, without an overbuilt model competing for attention.
+
+## 🤔 Why Iris (as the first model)?
+
+- **Small & clean** — 150 rows, zero missing values, no data-engineering detour.
+- **Well understood** — if the API misbehaves, it's the API's fault, not a confusing dataset.
+- **Genuine multi-class problem** — enough complexity to exercise validation and response design, without an overbuilt model competing for attention.
+
+ModelForge is designed so a future model swap — a different dataset, a
+different classifier, even a regression problem — shouldn't require
+renaming or restructuring the repo. Iris is the first tenant, not the
+identity, of this project.
+
 ---
-📚 References
-Cookiecutter Data Science — project structure conventions used above
-Made With ML — how production ML projects are scoped end-to-end
+
+## 📚 References
+
+- [Cookiecutter Data Science](https://github.com/drivendataorg/cookiecutter-data-science) — project structure conventions used above
+- [Made With ML](https://github.com/GokuMohandas/Made-With-ML) — how production ML projects are scoped end-to-end

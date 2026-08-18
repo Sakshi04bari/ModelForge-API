@@ -66,8 +66,6 @@ benchmark dataset for classification.
 |---|---|---|
 | ![Iris setosa](https://upload.wikimedia.org/wikipedia/commons/5/56/Kosaciec_szczecinkowaty_Iris_setosa.jpg) | ![Iris versicolor](https://upload.wikimedia.org/wikipedia/commons/4/41/Iris_versicolor_3.jpg) | ![Iris virginica](https://upload.wikimedia.org/wikipedia/commons/9/9f/Iris_virginica.jpg) |
 
-*Images: Wikimedia Commons.*
-
 ---
 
 ## 📜 API Contract
@@ -106,7 +104,7 @@ All four fields are **required**, must be numeric, and must be positive
 }
 ```
 
-**In plain English:** the client sends four flower measurements; the API
+The client sends four flower measurements; the API
 returns its best-guess species and a confidence score. If the input is
 missing a field, isn't numeric, or is out of a sane range, the request
 fails fast with a `422` naming the exact bad field — it never silently
@@ -181,28 +179,6 @@ modelforge-api/
     └── test_api.py               <- Endpoint integration tests
 ```
 
-This structure is the target for Task 2 onward — this repo currently
-contains only the planning artifact (this README).
-
----
-
-## ✅ Task 1 Completion Checklist
-
-- [x] Repo named and scoped: **ModelForge API**
-- [x] Dataset selected for v1 model: **Iris** (`iris_dataset.csv`)
-- [x] Problem scoped: single-endpoint, 3-class classification
-- [x] Input / output contract defined in plain English
-- [x] Request → validation → model → response flow diagrammed
-- [x] Repo initialized with first commit (this README)
-
-## 🚧 Roadmap
-
-- [ ] **Task 2** — Scaffold folder structure + Python environment
-- [ ] **Task 3** — Train & serialize the classification model
-- [ ] **Task 4** — Implement `/predict` with request validation
-- [ ] **Task 5** — Add tests, error handling, and logging
-- [ ] **Task 6** — Containerize and document deployment
-
 ---
 
 ## 🤔 Why Iris (as the first model)?
@@ -216,9 +192,3 @@ different classifier, even a regression problem — shouldn't require
 renaming or restructuring the repo. Iris is the first tenant, not the
 identity, of this project.
 
----
-
-## 📚 References
-
-- [Cookiecutter Data Science](https://github.com/drivendataorg/cookiecutter-data-science) — project structure conventions used above
-- [Made With ML](https://github.com/GokuMohandas/Made-With-ML) — how production ML projects are scoped end-to-end

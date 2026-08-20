@@ -178,7 +178,11 @@ modelforge-api/
     ├── test_validation.py       <- Input validation unit tests
     └── test_api.py               <- Endpoint integration tests
 ```
+## Preprocessing
 
+No scaling or encoding was required for this Iris classification model because all input features are numerical and Random Forest does not require feature scaling.
+
+If preprocessing is introduced in a future version, a scikit-learn Pipeline will be used to ensure the same preprocessing is applied during both training and prediction.
 ---
 
 ## 🤔 Why Iris (as the first model)?

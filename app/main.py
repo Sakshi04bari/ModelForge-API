@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 import joblib
 from fastapi import FastAPI
 from sklearn.datasets import load_iris
-
+from app.models.schemas import PredictionInput
 model = None
 iris = load_iris()
 
@@ -27,19 +27,12 @@ def root():
 
 
 @app.post("/predict")
-def predict():
-    features = {
-    "sepal_length": 6.0,
-    "sepal_width": 2.9,
-    "petal_length": 4.5,
-    "petal_width": 1.5
-}
-
+def predict(data: PredictionInput):
     sample = [[
-        features["sepal_length"],
-        features["sepal_width"],
-        features["petal_length"],
-        features["petal_width"]
+        data.sepal_length,
+        data.sepal_width,
+        data.petal_length,
+        data.petal_width
     ]]
 
     prediction = model.predict(sample)[0]

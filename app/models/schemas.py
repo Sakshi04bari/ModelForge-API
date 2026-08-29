@@ -14,3 +14,11 @@ class PredictionInput(BaseModel):
     petal_width: float = Field(
         ..., gt=0, le=10, description="Petal width in cm"
     )
+    
+    
+class PredictionOutput(BaseModel):
+    request_id: str
+    prediction: int
+    flower: str
+    confidence: float
+    model_version: str

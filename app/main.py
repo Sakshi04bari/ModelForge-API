@@ -7,27 +7,44 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 from sklearn.datasets import load_iris
 
-from app.models.schemas import PredictionInput, PredictionOutput
 from app.logging_config import setup_logger
+from app.routers.v1 import router as v1_router
 
 
-model = None
-iris = load_iris()
+# Setup logger
 logger = setup_logger()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model
+    """
+    Load the ML model once when the application starts.
+    """
 
-    model = joblib.load("ml/saved_model/model.joblib")
+    app.state.model = joblib.load(
+        "ml/saved_model/model.joblib"
+    )
+
+    app.state.iris = load_iris()
+    app.state.logger = logger
+
     logger.info("Model loaded successfully")
 
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+# Create FastAPI application
+app = FastAPI(
+    title="ModelForge API",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+
+# Middleware for request logging and request ID generation
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
+
     request_id = str(uuid.uuid4())
     request.state.request_id = request_id
 
@@ -49,6 +66,7 @@ async def log_requests(request: Request, call_next):
         return response
 
     except Exception as exc:
+
         duration = time.perf_counter() - start_time
 
         logger.error(
@@ -61,21 +79,21 @@ async def log_requests(request: Request, call_next):
 
         raise
 
+
+# Root endpoint
 @app.get("/")
 def root():
-    return {"message": "ML API is alive"}
-
-
-@app.get("/health")
-def health():
     return {
-        "status": "ok",
-        "model_loaded": model is not None
+        "message": "ML API is alive"
     }
 
 
+# Custom handler for ValueError
 @app.exception_handler(ValueError)
-async def value_error_handler(request: Request, exc: ValueError):
+async def value_error_handler(
+    request: Request,
+    exc: ValueError
+):
     return JSONResponse(
         status_code=400,
         content={
@@ -85,50 +103,5 @@ async def value_error_handler(request: Request, exc: ValueError):
     )
 
 
-@app.post("/predict", response_model=PredictionOutput)
-def predict(data: PredictionInput, request: Request):
-
-    request_id = request.state.request_id
-
-    try:
-        sample = [[
-            data.sepal_length,
-            data.sepal_width,
-            data.petal_length,
-            data.petal_width
-        ]]
-
-        prediction = model.predict(sample)[0]
-
-        probabilities = model.predict_proba(sample)[0]
-        confidence = float(max(probabilities))
-
-        flower_name = iris.target_names[prediction]
-
-        logger.info(
-            f"Prediction successful | "
-            f"request_id={request_id} | "
-            f"prediction={flower_name} | "
-            f"confidence={confidence:.4f}"
-        )
-
-        return {
-            "request_id": request_id,
-            "prediction": int(prediction),
-            "flower": flower_name,
-            "confidence": confidence,
-            "model_version": "1.0"
-        }
-
-    except Exception as exc:
-
-        logger.error(
-            f"Prediction failed | "
-            f"request_id={request_id} | "
-            f"error={exc}"
-        )
-
-        raise HTTPException(
-            status_code=500,
-            detail="Prediction failed"
-        )
+# Include version 1 API routes
+app.include_router(v1_router)

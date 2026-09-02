@@ -1,18 +1,19 @@
 import json
 import time
+
 from fastapi import APIRouter, HTTPException, Request
 
-from app.models.schemas import PredictionInput, PredictionOutput
-
-
-router = APIRouter(prefix="/api/v1")
-
+from app.config import settings
 from app.models.schemas import (
     PredictionInput,
     PredictionOutput,
     PredictionBatchInput,
     PredictionBatchOutput
 )
+
+
+router = APIRouter(prefix="/api/v1")
+
 
 @router.get("/health")
 def health(request: Request):
@@ -27,6 +28,7 @@ def predict(data: PredictionInput, request: Request):
 
     model = request.app.state.model
     iris = request.app.state.iris
+    logger = request.app.state.logger
     request_id = request.state.request_id
 
     try:
@@ -40,9 +42,17 @@ def predict(data: PredictionInput, request: Request):
         prediction = model.predict(sample)[0]
 
         probabilities = model.predict_proba(sample)[0]
+
         confidence = float(max(probabilities))
 
         flower_name = iris.target_names[prediction]
+
+        logger.info(
+            f"Prediction successful | "
+            f"request_id={request_id} | "
+            f"prediction={flower_name} | "
+            f"confidence={confidence:.4f}"
+        )
 
         return {
             "request_id": request_id,
@@ -54,7 +64,7 @@ def predict(data: PredictionInput, request: Request):
 
     except Exception as exc:
 
-        request.app.state.logger.error(
+        logger.error(
             f"Prediction failed | "
             f"request_id={request_id} | "
             f"error={exc}"
@@ -64,19 +74,46 @@ def predict(data: PredictionInput, request: Request):
             status_code=500,
             detail="Prediction failed"
         )
-@router.post("/predict-batch", response_model=PredictionBatchOutput)
+
+
+@router.post(
+    "/predict-batch",
+    response_model=PredictionBatchOutput
+)
 def predict_batch(
     data: PredictionBatchInput,
     request: Request
 ):
-    request_id = request.state.request_id
+
     model = request.app.state.model
-    logger = request.app.state.logger
     iris = request.app.state.iris
+    logger = request.app.state.logger
+    request_id = request.state.request_id
+
+    batch_size = len(data.inputs)
+
+    # Enforce configured batch size
+    if batch_size > settings.MAX_BATCH_SIZE:
+
+        logger.warning(
+            f"Batch size exceeded | "
+            f"request_id={request_id} | "
+            f"batch_size={batch_size} | "
+            f"max_batch_size={settings.MAX_BATCH_SIZE}"
+        )
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Maximum batch size is "
+                f"{settings.MAX_BATCH_SIZE}"
+            )
+        )
 
     start_time = time.perf_counter()
 
     try:
+
         samples = [
             [
                 item.sepal_length,
@@ -87,8 +124,9 @@ def predict_batch(
             for item in data.inputs
         ]
 
-        # Predict the entire batch at once
+        # Predict the complete batch at once
         predictions = model.predict(samples)
+
         probabilities = model.predict_proba(samples)
 
         results = []
@@ -97,7 +135,9 @@ def predict_batch(
             predictions,
             probabilities
         ):
+
             confidence = float(max(probability))
+
             flower_name = iris.target_names[prediction]
 
             results.append(
@@ -115,7 +155,7 @@ def predict_batch(
         logger.info(
             f"Batch prediction successful | "
             f"request_id={request_id} | "
-            f"batch_size={len(data.inputs)} | "
+            f"batch_size={batch_size} | "
             f"duration={duration:.4f}s"
         )
 
@@ -123,39 +163,48 @@ def predict_batch(
             predictions=results
         )
 
+    except HTTPException:
+        raise
+
     except Exception as exc:
 
         logger.error(
             f"Batch prediction failed | "
             f"request_id={request_id} | "
-            f"batch_size={len(data.inputs)} | "
+            f"batch_size={batch_size} | "
             f"error={exc}"
         )
 
         raise HTTPException(
             status_code=500,
             detail="Batch prediction failed"
-        )            
-        
+        )
+
+
 @router.get("/model-info")
 def model_info(request: Request):
 
+    logger = request.app.state.logger
+
     try:
+
         with open(
             "ml/saved_model/model_info.json",
             "r"
         ) as file:
+
             metadata = json.load(file)
 
         return metadata
 
     except Exception as exc:
 
-        request.app.state.logger.error(
-            f"Failed to load model metadata | error={exc}"
+        logger.error(
+            f"Failed to load model metadata | "
+            f"error={exc}"
         )
 
         raise HTTPException(
             status_code=500,
             detail="Model information unavailable"
-        )        
+        )

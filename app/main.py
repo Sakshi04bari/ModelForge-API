@@ -3,10 +3,11 @@ import time
 import uuid
 
 import joblib
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from sklearn.datasets import load_iris
 
+from app.config import settings
 from app.logging_config import setup_logger
 from app.routers.v1 import router as v1_router
 
@@ -21,12 +22,14 @@ async def lifespan(app: FastAPI):
     Load the ML model once when the application starts.
     """
 
+    # Load model path from environment configuration
     app.state.model = joblib.load(
-        "ml/saved_model/model.joblib"
+        settings.MODEL_PATH
     )
 
     app.state.iris = load_iris()
     app.state.logger = logger
+    app.state.settings = settings
 
     logger.info("Model loaded successfully")
 
@@ -35,7 +38,7 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI application
 app = FastAPI(
-    title="ModelForge API",
+    title=settings.API_TITLE,
     version="1.0.0",
     lifespan=lifespan
 )

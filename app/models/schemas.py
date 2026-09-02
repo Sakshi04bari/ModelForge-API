@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel, Field
 
 
@@ -22,3 +24,10 @@ class PredictionOutput(BaseModel):
     flower: str
     confidence: float
     model_version: str
+    
+class PredictionBatchInput(BaseModel):
+    inputs: List[PredictionInput] = Field(..., min_length=1, max_length=100)
+
+
+class PredictionBatchOutput(BaseModel):
+    predictions: List[PredictionOutput]

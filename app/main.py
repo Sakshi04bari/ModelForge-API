@@ -10,7 +10,7 @@ from sklearn.datasets import load_iris
 from app.config import settings
 from app.logging_config import setup_logger
 from app.routers.v1 import router as v1_router
-
+from app.routers.v2 import router as v2_router
 
 # Setup logger
 logger = setup_logger()
@@ -108,3 +108,4 @@ async def value_error_handler(
 
 # Include version 1 API routes
 app.include_router(v1_router)
+app.include_router(v2_router)

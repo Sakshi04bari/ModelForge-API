@@ -196,3 +196,10 @@ different classifier, even a regression problem — shouldn't require
 renaming or restructuring the repo. Iris is the first tenant, not the
 identity, of this project.
 
+## How to Run
+
+### Using Docker Compose
+
+```bash
+docker compose up --build
+

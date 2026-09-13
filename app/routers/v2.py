@@ -1,11 +1,13 @@
 import uuid
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.models.schemas import PredictionInput
-
-router = APIRouter(prefix="/api/v2", tags=["V2"])
-
+from app.security import verify_api_key
+router = APIRouter(
+    prefix="/api/v2",
+    dependencies=[Depends(verify_api_key)]
+)
 
 @router.post("/predict")
 def predict_v2(data: PredictionInput, request: Request):

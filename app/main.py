@@ -4,6 +4,7 @@ import uuid
 
 import joblib
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sklearn.datasets import load_iris
 
@@ -12,22 +13,27 @@ from app.logging_config import setup_logger
 from app.routers.v1 import router as v1_router
 from app.routers.v2 import router as v2_router
 
+
 # Setup logger
 logger = setup_logger()
 
 
+# Application lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
     Load the ML model once when the application starts.
     """
 
-    # Load model path from environment configuration
+    # Load model
     app.state.model = joblib.load(
         settings.MODEL_PATH
     )
 
+    # Load Iris dataset information
     app.state.iris = load_iris()
+
+    # Store logger and settings
     app.state.logger = logger
     app.state.settings = settings
 
@@ -41,6 +47,16 @@ app = FastAPI(
     title=settings.API_TITLE,
     version="1.0.0",
     lifespan=lifespan
+)
+
+
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["X-API-Key", "Content-Type"],
 )
 
 
@@ -108,4 +124,6 @@ async def value_error_handler(
 
 # Include version 1 API routes
 app.include_router(v1_router)
+
+# Include version 2 API routes
 app.include_router(v2_router)

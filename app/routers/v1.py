@@ -1,8 +1,8 @@
 import json
 import time
 
-from fastapi import APIRouter, HTTPException, Request
-
+from fastapi import APIRouter, Depends, HTTPException, Request
+from app.security import verify_api_key
 from app.config import settings
 from app.models.schemas import (
     PredictionInput,
@@ -12,7 +12,12 @@ from app.models.schemas import (
 )
 
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(
+    prefix="/api/v1",
+    dependencies=[Depends(verify_api_key)]
+)
+
+
 
 
 @router.get("/health")

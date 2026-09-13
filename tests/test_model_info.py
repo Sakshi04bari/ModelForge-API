@@ -1,7 +1,9 @@
+from app.config import settings
 def test_model_info(client):
 
     response = client.get(
-        "/api/v1/model-info"
+        "/api/v1/model-info",
+        headers={"X-API-Key": settings.API_KEY}
     )
 
     assert response.status_code == 200

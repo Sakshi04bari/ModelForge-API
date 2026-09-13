@@ -1,9 +1,10 @@
 from typing import List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PredictionInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     sepal_length: float = Field(
         ..., gt=0, le=10, description="Sepal length in cm"
     )
@@ -19,6 +20,7 @@ class PredictionInput(BaseModel):
     
     
 class PredictionOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     request_id: str
     prediction: int
     flower: str
@@ -26,8 +28,10 @@ class PredictionOutput(BaseModel):
     model_version: str
     
 class PredictionBatchInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     inputs: List[PredictionInput] = Field(..., min_length=1, max_length=100)
 
 
 class PredictionBatchOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     predictions: List[PredictionOutput]

@@ -1,3 +1,4 @@
+from app.config import settings
 def test_predict_valid_input(client):
 
     payload = {
@@ -8,9 +9,10 @@ def test_predict_valid_input(client):
     }
 
     response = client.post(
-        "/api/v1/predict",
-        json=payload
-    )
+    "/api/v1/predict",
+    json=payload,
+    headers={"X-API-Key": settings.API_KEY}
+)
 
     assert response.status_code == 200
 
@@ -41,7 +43,8 @@ def test_predict_missing_field(client):
 
     response = client.post(
         "/api/v1/predict",
-        json=payload
+        json=payload,
+        headers={"X-API-Key": settings.API_KEY}
     )
 
     assert response.status_code == 422
@@ -58,7 +61,8 @@ def test_predict_invalid_value(client):
 
     response = client.post(
         "/api/v1/predict",
-        json=payload
+        json=payload,
+        headers={"X-API-Key": settings.API_KEY}
     )
 
     assert response.status_code == 422

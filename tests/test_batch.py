@@ -1,3 +1,4 @@
+from app.config import settings
 def test_predict_batch(client):
 
     payload = {
@@ -25,7 +26,8 @@ def test_predict_batch(client):
 
     response = client.post(
         "/api/v1/predict-batch",
-        json=payload
+        json=payload,
+        headers={"X-API-Key": settings.API_KEY}
     )
 
     assert response.status_code == 200
@@ -50,8 +52,9 @@ def test_predict_batch_oversized(client):
     }
 
     response = client.post(
-        "/api/v1/predict-batch",
-        json=payload
-    )
+    "/api/v1/predict-batch",
+    json=payload,
+    headers={"X-API-Key": settings.API_KEY}
+)
 
     assert response.status_code == 422

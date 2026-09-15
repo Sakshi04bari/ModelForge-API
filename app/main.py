@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 import time
 import uuid
-
+from prometheus_fastapi_instrumentator import Instrumentator
 import joblib
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -49,6 +49,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+instrumentator = Instrumentator()
+instrumentator.instrument(app).expose(app)
 
 # CORS configuration
 app.add_middleware(

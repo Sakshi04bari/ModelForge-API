@@ -1,6 +1,6 @@
 import json
 import time
-
+from app.metrics import predictions_total
 from fastapi import APIRouter, Depends, HTTPException, Request
 from app.security import verify_api_key
 from app.config import settings
@@ -51,7 +51,9 @@ def predict(data: PredictionInput, request: Request):
         confidence = float(max(probabilities))
 
         flower_name = iris.target_names[prediction]
-
+        
+        predictions_total.labels(flower=flower_name).inc()
+        
         logger.info(
             f"Prediction successful | "
             f"request_id={request_id} | "

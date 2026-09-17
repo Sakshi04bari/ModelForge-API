@@ -116,29 +116,51 @@ guesses, and it never lets bad data reach the model.
 
 ```
 Client
-  │  POST /predict  { sepal_length, sepal_width, petal_length, petal_width }
+  │
+  │ HTTP Request
   ▼
-┌───────────────────────┐
-│ 1. Request received    │  Parse JSON body
-└──────────┬─────────────┘
-           ▼
-┌───────────────────────┐
-│ 2. Validation           │  • All 4 fields present?
-│                         │  • All numeric?
-│                         │  • All positive / in range?
-│                         │  ✗ FAIL → 422 + field-specific error (stop here)
-└──────────┬─────────────┘
-           ▼ (only valid input reaches this point)
-┌───────────────────────┐
-│ 3. Model inference      │  Pre-trained classifier predicts
-│                         │  class label + probability
-└──────────┬─────────────┘
-           ▼
-┌───────────────────────┐
-│ 4. Response             │  Format as JSON → 200 OK
-└──────────┬─────────────┘
-           ▼
-Client receives prediction
+┌─────────────────────────┐
+│ 1. FastAPI receives     │
+│    the request          │
+└────────────┬────────────┘
+             ▼
+┌─────────────────────────┐
+│ 2. API Key             │
+│    Authentication       │
+│                         │
+│    ✗ Invalid/Missing    │
+│      → 401 Unauthorized │
+└────────────┬────────────┘
+             ▼
+┌─────────────────────────┐
+│ 3. Pydantic Validation │
+│                         │
+│ • Required fields       │
+│ • Numeric values        │
+│ • Range validation      │
+│ • Extra-field rejection │
+└────────────┬────────────┘
+             ▼
+┌─────────────────────────┐
+│ 4. Model Inference     │
+│                         │
+│ Random Forest           │
+│ classifier predicts     │
+│ the Iris species        │
+└────────────┬────────────┘
+             ▼
+┌─────────────────────────┐
+│ 5. Response Formatting │
+│                         │
+│ JSON response with      │
+│ prediction information  │
+└────────────┬────────────┘
+             ▼
+       ┌─────┴─────┐
+       │           │
+       ▼           ▼
+    Client      Monitoring
+                  + Logging
 ```
 
 **Key design decision:** validation is a hard gate *before* the model is
@@ -153,30 +175,44 @@ Structured using a clean, production-ready project layout, adapted specifically 
 
 ```
 modelforge-api/
-├── README.md               <- You are here
-├── requirements.txt          <- Pinned dependencies
-├── pyproject.toml            <- Project metadata & tool config
+
+├── README.md
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
 │
-├── data/
-│   └── raw/                    <- iris_dataset.csv (immutable, original)
+├── app/
+│   ├── main.py                 <- FastAPI application entrypoint
+│   ├── config.py               <- Application configuration
+│   ├── security.py             <- API key authentication
+│   ├── logging_config.py       <- Logging configuration
+│   ├── metrics.py              <- Prometheus custom metrics
+│   │
+│   ├── models/
+│   │   └── schemas.py          <- Pydantic request/response schemas
+│   │
+│   └── routers/
+│       ├── v1.py               <- Version 1 API endpoints
+│       └── v2.py               <- Version 2 API endpoints
 │
-├── models/                     <- Serialized trained model (e.g. model.pkl)
+├── ml/
+│   ├── train.py                <- Model training
+│   ├── predict.py              <- Local model prediction script
+│   │
+│   └── saved_model/
+│       ├── model.joblib        <- Trained Random Forest model
+│       └── model_info.json     <- Model metadata
 │
-├── notebooks/                   <- Exploration / training experiments
-│   └── 1.0-eda-and-training.ipynb
+├── tests/
+│   ├── test_main.py            <- API tests
+│   ├── test_metrics.py         <- Metrics tests
+│   └── load_test.py            <- Concurrent load testing
 │
-├── src/
-│   ├── config.py                <- Paths, constants, settings
-│   ├── train.py                  <- Trains and serializes the model
-│   ├── schemas.py                <- Request/response validation models
-│   └── api/
-│       ├── main.py                <- API entrypoint
-│       └── routes/
-│           └── predict.py           <- /predict endpoint logic
-│
-└── tests/
-    ├── test_validation.py       <- Input validation unit tests
-    └── test_api.py               <- Endpoint integration tests
+└── .github/
+    └── workflows/
+        └── tests.yml           <- GitHub Actions CI
 ```
 ## Preprocessing
 
@@ -196,10 +232,110 @@ different classifier, even a regression problem — shouldn't require
 renaming or restructuring the repo. Iris is the first tenant, not the
 identity, of this project.
 
-## How to Run
+## ⚙️ How to Run
 
-### Using Docker Compose
+### 1. Clone the Repository
 
 ```bash
+git clone https://github.com/Sakshi04bari/ModelForge-API.git
+cd ModelForge-API
+2. Create Virtual Environment
+python -m venv venv
+3. Activate Virtual Environment
+
+Windows PowerShell:
+
+.\venv\Scripts\Activate.ps1
+4. Install Dependencies
+pip install -r requirements.txt
+5. Configure Environment Variables
+
+Create a .env file in the project root:
+
+API_KEY=your-api-key
+6. Run the API Locally
+uvicorn app.main:app --reload
+
+The API will be available at:
+
+http://localhost:8000
+7. Open API Documentation
+
+Swagger UI:
+
+http://localhost:8000/docs
+
+ReDoc:
+
+http://localhost:8000/redoc
+8. Run with Docker Compose
+
+Build and start the application:
+
 docker compose up --build
 
+Run in detached mode:
+
+docker compose up --build -d
+
+Check running containers:
+
+docker compose ps
+
+View logs:
+
+docker compose logs
+
+Follow logs:
+
+docker compose logs -f
+
+Stop the application:
+
+docker compose down
+9. Run Tests
+python -m pytest -v
+10. Run Load Test
+
+Set the API key in PowerShell:
+
+$env:API_KEY="your-api-key"
+
+Run the load test:
+
+python tests/load_test.py
+11. Check API Health
+curl http://localhost:8000/
+
+Protected health endpoint:
+
+curl -H "X-API-Key: your-api-key" http://localhost:8000/api/v1/health
+12. Test Prediction
+curl -X POST http://localhost:8000/api/v1/predict -H "Content-Type: application/json" -H "X-API-Key: your-api-key" -d "{\"sepal_length\":5.1,\"sepal_width\":3.5,\"petal_length\":1.4,\"petal_width\":0.2}"
+13. Check Prometheus Metrics
+http://localhost:8000/metrics
+
+Or:
+
+curl http://localhost:8000/metrics
+
+### 🔐 API Authentication
+
+Protected endpoints require an API key.
+
+The API key must be sent using the X-API-Key header.
+
+Example:
+
+curl -H "X-API-Key: your-api-key" \
+http://localhost:8000/api/v1/health
+
+## 🧪 Run Tests
+
+Run the complete test suite:
+
+python -m pytest -v
+
+Expected result:
+
+13 passed

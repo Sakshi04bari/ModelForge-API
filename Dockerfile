@@ -12,4 +12,4 @@ EXPOSE 8000
 
 # Docker containers must listen on 0.0.0.0 so the port is reachable
 # from outside the container.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]

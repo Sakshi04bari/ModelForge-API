@@ -12,5 +12,3 @@ prediction = model.predict(sample)[0]
 
 predicted_name = iris.target_names[prediction]
 
-print("Predicted class:", prediction)
-print("Predicted flower:", predicted_name)

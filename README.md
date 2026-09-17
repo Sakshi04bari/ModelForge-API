@@ -239,103 +239,180 @@ identity, of this project.
 ```bash
 git clone https://github.com/Sakshi04bari/ModelForge-API.git
 cd ModelForge-API
-2. Create Virtual Environment
+```
+
+### 2. Create Virtual Environment
+
+```bash
 python -m venv venv
-3. Activate Virtual Environment
+```
 
-Windows PowerShell:
+### 3. Activate Virtual Environment
 
+**Windows PowerShell:**
+
+```powershell
 .\venv\Scripts\Activate.ps1
-4. Install Dependencies
+```
+
+### 4. Install Dependencies
+
+```bash
 pip install -r requirements.txt
-5. Configure Environment Variables
+```
 
-Create a .env file in the project root:
+### 5. Configure Environment Variables
 
+Create a `.env` file in the project root:
+
+```
 API_KEY=your-api-key
-6. Run the API Locally
+```
+
+### 6. Run the API Locally
+
+```bash
 uvicorn app.main:app --reload
+```
 
 The API will be available at:
 
+```
 http://localhost:8000
-7. Open API Documentation
+```
 
-Swagger UI:
+### 7. Open API Documentation
 
+**Swagger UI:**
+
+```
 http://localhost:8000/docs
+```
 
-ReDoc:
+**ReDoc:**
 
+```
 http://localhost:8000/redoc
-8. Run with Docker Compose
+```
+
+### 8. Run with Docker Compose
 
 Build and start the application:
 
+```bash
 docker compose up --build
+```
 
 Run in detached mode:
 
+```bash
 docker compose up --build -d
+```
 
 Check running containers:
 
+```bash
 docker compose ps
+```
 
 View logs:
 
+```bash
 docker compose logs
+```
 
 Follow logs:
 
+```bash
 docker compose logs -f
+```
 
 Stop the application:
 
+```bash
 docker compose down
-9. Run Tests
+```
+
+### 9. Run Tests
+
+```bash
 python -m pytest -v
-10. Run Load Test
+```
+
+### 10. Run Load Test
 
 Set the API key in PowerShell:
 
+```powershell
 $env:API_KEY="your-api-key"
+```
 
 Run the load test:
 
+```bash
 python tests/load_test.py
-11. Check API Health
+```
+
+### 11. Check API Health
+
+```bash
 curl http://localhost:8000/
+```
 
 Protected health endpoint:
 
+```bash
 curl -H "X-API-Key: your-api-key" http://localhost:8000/api/v1/health
-12. Test Prediction
-curl -X POST http://localhost:8000/api/v1/predict -H "Content-Type: application/json" -H "X-API-Key: your-api-key" -d "{\"sepal_length\":5.1,\"sepal_width\":3.5,\"petal_length\":1.4,\"petal_width\":0.2}"
-13. Check Prometheus Metrics
+```
+
+### 12. Test Prediction
+
+```bash
+curl -X POST http://localhost:8000/api/v1/predict \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key" \
+  -d "{\"sepal_length\":5.1,\"sepal_width\":3.5,\"petal_length\":1.4,\"petal_width\":0.2}"
+```
+
+### 13. Check Prometheus Metrics
+
+```
 http://localhost:8000/metrics
+```
 
 Or:
 
+```bash
 curl http://localhost:8000/metrics
+```
 
-### 🔐 API Authentication
+---
+
+## 🔐 API Authentication
 
 Protected endpoints require an API key.
 
-The API key must be sent using the X-API-Key header.
+The API key must be sent using the `X-API-Key` header.
 
-Example:
+**Example:**
 
+```bash
 curl -H "X-API-Key: your-api-key" \
-http://localhost:8000/api/v1/health
+  http://localhost:8000/api/v1/health
+```
+
+---
 
 ## 🧪 Run Tests
 
 Run the complete test suite:
 
+```bash
 python -m pytest -v
+```
 
-Expected result:
+**Expected result:**
 
+```
 13 passed
+```

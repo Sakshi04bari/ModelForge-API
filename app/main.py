@@ -5,7 +5,9 @@ from prometheus_fastapi_instrumentator import Instrumentator
 import joblib
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from sklearn.datasets import load_iris
 
 from app.config import settings
@@ -48,6 +50,10 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Serve the lightweight model operations dashboard from the same service.
+static_dir = Path(__file__).parent / "static"
+app.mount("/ui", StaticFiles(directory=static_dir, html=True), name="ui")
 
 instrumentator = Instrumentator()
 instrumentator.instrument(app).expose(app)

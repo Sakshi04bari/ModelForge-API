@@ -107,12 +107,11 @@ async def log_requests(request: Request, call_next):
         raise
 
 
-# Root endpoint
-@app.get("/")
+# Root endpoint serves the ModelForge dashboard. API routes remain available
+# under their versioned paths and Swagger UI is available at /docs.
+@app.get("/", include_in_schema=False)
 def root():
-    return {
-        "message": "ML API is alive"
-    }
+    return FileResponse(static_dir / "index.html")
 
 
 # Custom handler for ValueError

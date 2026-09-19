@@ -3,101 +3,270 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ModelForge API - Iris Predictor</title>
+  <title>ModelForge API &middot; Iris Species Predictor</title>
+  <meta name="description" content="Predict iris flower species from sepal and petal measurements using a machine learning model." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
-  <nav class="navbar">
-    <span class="logo">ModelForge</span>
-    <span class="tag">Iris Predictor</span>
-  </nav>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C8 6 6 10 6 14a6 6 0 0 0 12 0c0-4-2-8-6-12z"/>
+            <path d="M12 14v8"/>
+          </svg>
+        </div>
+        <div class="brand-name">Model<span>Forge</span></div>
+      </div>
+      <div class="header-links">
+        <span class="status-badge">API Online</span>
+        <a href="/docs" target="_blank">API Docs</a>
+        <a href="/metrics" target="_blank">Metrics</a>
+      </div>
+    </div>
+  </header>
 
   <div class="container">
-    <div class="hero">
-      <h1>Iris Species Predictor</h1>
-      <p>Enter four flower measurements to predict the iris species.</p>
-    </div>
 
-    <div class="card">
-      <h2>Measurements</h2>
-      <form id="predict-form" autocomplete="off">
-        <div class="api-key-field field">
-          <label for="api_key">API Key</label>
-          <input type="password" id="api_key" placeholder="Enter your API key" required />
-          <small>Required to access the prediction API.</small>
-        </div>
+    <!-- Hero -->
+    <section class="hero">
+      <span class="hero-eyebrow">Machine Learning Inference</span>
+      <h1>Iris Species <span class="accent-text">Predictor</span></h1>
+      <p>Enter four flower measurements and the model will classify the species in real time.</p>
+    </section>
 
-        <div class="grid-2">
-          <div class="field">
-            <label for="sepal_length">Sepal Length <span class="unit">(cm)</span></label>
-            <input type="number" id="sepal_length" step="0.01" min="0.01" max="10" placeholder="e.g. 5.1" required />
+    <!-- Main two-column layout -->
+    <div class="main-grid">
+
+      <!-- Left: Input form -->
+      <div class="card">
+        <div class="card-header">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/>
+            </svg>
           </div>
-          <div class="field">
-            <label for="sepal_width">Sepal Width <span class="unit">(cm)</span></label>
-            <input type="number" id="sepal_width" step="0.01" min="0.01" max="10" placeholder="e.g. 3.5" required />
-          </div>
-          <div class="field">
-            <label for="petal_length">Petal Length <span class="unit">(cm)</span></label>
-            <input type="number" id="petal_length" step="0.01" min="0.01" max="10" placeholder="e.g. 1.4" required />
-          </div>
-          <div class="field">
-            <label for="petal_width">Petal Width <span class="unit">(cm)</span></label>
-            <input type="number" id="petal_width" step="0.01" min="0.01" max="10" placeholder="e.g. 0.2" required />
+          <div>
+            <h2>Input Parameters</h2>
+            <p>All fields are required. Values must be between 0 and 10 cm.</p>
           </div>
         </div>
 
-        <div class="field">
-          <label for="version">API Version</label>
-          <select id="version" style="width:100%;padding:0.7rem 0.9rem;border:2px solid var(--border);border-radius:10px;font-size:1rem;">
-            <option value="v1">v1 - Confidence score</option>
-            <option value="v2">v2 - Full probability breakdown</option>
-          </select>
+        <form id="predict-form" autocomplete="off">
+          <div class="field">
+            <div class="field-label">
+              <span>API Key</span>
+            </div>
+            <div class="input-wrap">
+              <input type="password" id="api_key" placeholder="Enter your API key" required />
+            </div>
+            <div class="helper-text">Authentication key sent via the X-API-Key header.</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="form-grid">
+            <div class="field">
+              <div class="field-label">
+                <span>Sepal Length</span>
+                <span class="unit">cm</span>
+              </div>
+              <input type="number" id="sepal_length" step="0.01" min="0.01" max="10" placeholder="5.1" required />
+            </div>
+            <div class="field">
+              <div class="field-label">
+                <span>Sepal Width</span>
+                <span class="unit">cm</span>
+              </div>
+              <input type="number" id="sepal_width" step="0.01" min="0.01" max="10" placeholder="3.5" required />
+            </div>
+            <div class="field">
+              <div class="field-label">
+                <span>Petal Length</span>
+                <span class="unit">cm</span>
+              </div>
+              <input type="number" id="petal_length" step="0.01" min="0.01" max="10" placeholder="1.4" required />
+            </div>
+            <div class="field">
+              <div class="field-label">
+                <span>Petal Width</span>
+                <span class="unit">cm</span>
+              </div>
+              <input type="number" id="petal_width" step="0.01" min="0.01" max="10" placeholder="0.2" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">
+              <span>API Version</span>
+            </div>
+            <select id="version">
+              <option value="v1">v1 &mdash; Confidence score</option>
+              <option value="v2">v2 &mdash; Full probability breakdown</option>
+            </select>
+            <div class="helper-text">Choose the response format for the prediction.</div>
+          </div>
+
+          <button type="submit" class="btn" id="submit-btn">
+            <span id="btn-text">Predict Species</span>
+          </button>
+        </form>
+
+        <div class="alert" id="error-box"></div>
+      </div>
+
+      <!-- Right: Result panel -->
+      <div class="card">
+        <div class="card-header">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+            </svg>
+          </div>
+          <div>
+            <h2>Prediction Result</h2>
+            <p>Species classification and confidence metrics.</p>
+          </div>
         </div>
 
-        <button type="submit" class="btn">Predict Species</button>
-      </form>
+        <!-- Empty state -->
+        <div class="result-empty" id="result-empty">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2C8 6 6 10 6 14a6 6 0 0 0 12 0c0-4-2-8-6-12z"/>
+              <path d="M12 14v8"/>
+            </svg>
+          </div>
+          <h3>Awaiting Input</h3>
+          <p>Fill in the measurements and click predict to see the result.</p>
+        </div>
 
-      <div class="error" id="error-box"></div>
+        <!-- Result content -->
+        <div class="result-panel" id="result-panel">
+          <div class="result-species-row">
+            <div class="flower-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2C8 6 6 10 6 14a6 6 0 0 0 12 0c0-4-2-8-6-12z"/>
+                <path d="M12 14v8"/>
+              </svg>
+            </div>
+            <div class="species-info">
+              <div class="species-label">Predicted Species</div>
+              <div class="species-name" id="result-species"></div>
+            </div>
+          </div>
+
+          <div class="confidence-section" id="confidence-section">
+            <div class="confidence-header">
+              <span class="label">Confidence Score</span>
+              <span class="value" id="confidence-value"></span>
+            </div>
+            <div class="confidence-track">
+              <div class="confidence-fill" id="confidence-fill"></div>
+            </div>
+          </div>
+
+          <div class="probs-section" id="probs-section" style="display:none;">
+            <div class="section-label">Probability Distribution</div>
+            <div id="probs-list"></div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-item">
+              <div class="meta-key">Model Version</div>
+              <div class="meta-val" id="info-version"></div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-key">Request ID</div>
+              <div class="meta-val" id="info-request-id"></div>
+            </div>
+          </div>
+
+          <button class="btn secondary" id="reset-btn">Predict Again</button>
+        </div>
+      </div>
     </div>
 
-    <div class="card result" id="result-card">
-      <h2>Prediction Result</h2>
-      <div class="species" id="result-species"></div>
-      <div class="confidence-bar">
-        <div class="confidence-fill" id="confidence-fill"></div>
+    <!-- Model info strip -->
+    <div class="card model-info-card">
+      <div class="model-info-grid">
+        <div class="model-info-item">
+          <svg class="mi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/>
+          </svg>
+          <div class="mi-label">Model Type</div>
+          <div class="mi-value">Random Forest</div>
+        </div>
+        <div class="model-info-item">
+          <svg class="mi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/>
+          </svg>
+          <div class="mi-label">Accuracy</div>
+          <div class="mi-value">~100%</div>
+        </div>
+        <div class="model-info-item">
+          <svg class="mi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          <div class="mi-label">Version</div>
+          <div class="mi-value">1.0</div>
+        </div>
+        <div class="model-info-item">
+          <svg class="mi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12h20"/><path d="M6 8l-4 4 4 4"/><path d="M18 8l4 4-4 4"/>
+          </svg>
+          <div class="mi-label">Classes</div>
+          <div class="mi-value">3 Species</div>
+        </div>
       </div>
-      <div class="confidence-label" id="confidence-label"></div>
-
-      <div class="probs" id="probs-section" style="display:none;">
-        <h3>Probability breakdown</h3>
-        <div id="probs-list"></div>
-      </div>
-
-      <div class="info-grid">
-        <div class="item"><div class="k">Model Version</div><div class="v" id="info-version"></div></div>
-        <div class="item"><div class="k">Request ID</div><div class="v" id="info-request-id" style="font-size:0.7rem;word-break:break-all;"></div></div>
-      </div>
-
-      <button class="btn secondary" onclick="document.getElementById('result-card').classList.remove('show')">Predict Again</button>
     </div>
+
   </div>
 
-  <footer>ModelForge API &middot; Iris species classifier</footer>
+  <!-- Footer -->
+  <footer class="footer">
+    ModelForge API &middot; Powered by <a href="/docs" target="_blank">FastAPI</a> &amp; scikit-learn &middot; <a href="https://archive.ics.uci.edu/dataset/53/iris" target="_blank" rel="noopener">Iris Dataset</a>
+  </footer>
 
   <script>
     const form = document.getElementById('predict-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
     const errorBox = document.getElementById('error-box');
-    const resultCard = document.getElementById('result-card');
+    const resultEmpty = document.getElementById('result-empty');
+    const resultPanel = document.getElementById('result-panel');
+    const resetBtn = document.getElementById('reset-btn');
 
     function showError(msg) {
       errorBox.textContent = msg;
       errorBox.classList.add('show');
-      resultCard.classList.remove('show');
     }
 
     function clearError() {
       errorBox.classList.remove('show');
     }
+
+    function setLoading(loading) {
+      if (loading) {
+        submitBtn.disabled = true;
+        btnText.innerHTML = '<span class="spinner"></span> Predicting...';
+      } else {
+        submitBtn.disabled = false;
+        btnText.textContent = 'Predict Species';
+      }
+    }
+
+    function resetView() {
+      resultEmpty.style.display = 'block';
+      resultPanel.classList.remove('show');
+    }
+
+    resetBtn.addEventListener('click', resetView);
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -112,7 +281,9 @@
         petal_width: parseFloat(document.getElementById('petal_width').value)
       };
 
-      if (!apiKey) { showError('Please enter your API key.'); return; }
+      if (!apiKey) { showError('Please enter your API key to continue.'); return; }
+
+      setLoading(true);
 
       try {
         const resp = await fetch('/api/' + version + '/predict', {
@@ -129,39 +300,57 @@
           return;
         }
 
+        // Populate result
         document.getElementById('result-species').textContent = data.flower;
         document.getElementById('info-version').textContent = data.model_version || '-';
-        document.getElementById('info-request-id').textContent = data.request_id || '-';
+        document.getElementById('info-request-id').textContent = data.request_id ? data.request_id.substring(0, 8) + '...' : '-';
 
+        const confidenceSection = document.getElementById('confidence-section');
         const probsSection = document.getElementById('probs-section');
         const probsList = document.getElementById('probs-list');
 
         if (data.probabilities) {
+          // v2 response
+          confidenceSection.style.display = 'none';
           probsSection.style.display = 'block';
-          document.getElementById('confidence-fill').style.width = '0%';
-          document.getElementById('confidence-label').textContent = 'See breakdown below';
-
           probsList.innerHTML = '';
+
           const entries = Object.entries(data.probabilities).sort((a, b) => b[1] - a[1]);
-          entries.forEach(([name, prob]) => {
-            const pct = (prob * 100).toFixed(1);
-            const row = document.createElement('div');
+          entries.forEach(function(entry, idx) {
+            var name = entry[0];
+            var prob = entry[1];
+            var pct = (prob * 100).toFixed(1);
+            var row = document.createElement('div');
             row.className = 'prob-row';
-            row.innerHTML = '<span class="name">' + name + '</span><span class="bar"><span style="width:' + pct + '%"></span></span><span class="pct">' + pct + '%</span>';
+            row.innerHTML = '<span class="prob-name">' + name + '</span>' +
+              '<span class="prob-bar"><span data-width="' + pct + '"></span></span>' +
+              '<span class="prob-pct">' + pct + '%</span>';
             probsList.appendChild(row);
           });
-        } else {
-          probsSection.style.display = 'none';
-          const conf = (data.confidence * 100).toFixed(1);
-          setTimeout(() => {
-            document.getElementById('confidence-fill').style.width = conf + '%';
+
+          // Animate bars
+          setTimeout(function() {
+            probsList.querySelectorAll('.prob-bar > span').forEach(function(bar) {
+              bar.style.width = bar.getAttribute('data-width') + '%';
+            });
           }, 50);
-          document.getElementById('confidence-label').textContent = 'Confidence: ' + conf + '%';
+        } else {
+          // v1 response
+          probsSection.style.display = 'none';
+          confidenceSection.style.display = 'block';
+          var conf = (data.confidence * 100).toFixed(1);
+          document.getElementById('confidence-value').textContent = conf + '%';
+          var fill = document.getElementById('confidence-fill');
+          fill.style.width = '0%';
+          setTimeout(function() { fill.style.width = conf + '%'; }, 50);
         }
 
-        resultCard.classList.add('show');
+        resultEmpty.style.display = 'none';
+        resultPanel.classList.add('show');
       } catch (err) {
-        showError('Could not reach the API. Make sure the server is running.');
+        showError('Could not reach the prediction API. Please ensure the server is running and reachable.');
+      } finally {
+        setLoading(false);
       }
     });
   </script>

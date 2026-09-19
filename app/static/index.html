@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ModelForge API - Iris Predictor</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="logo">ModelForge</span>
+    <span class="tag">Iris Predictor</span>
+  </nav>
+
+  <div class="container">
+    <div class="hero">
+      <h1>Iris Species Predictor</h1>
+      <p>Enter four flower measurements to predict the iris species.</p>
+    </div>
+
+    <div class="card">
+      <h2>Measurements</h2>
+      <form id="predict-form" autocomplete="off">
+        <div class="api-key-field field">
+          <label for="api_key">API Key</label>
+          <input type="password" id="api_key" placeholder="Enter your API key" required />
+          <small>Required to access the prediction API.</small>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="sepal_length">Sepal Length <span class="unit">(cm)</span></label>
+            <input type="number" id="sepal_length" step="0.01" min="0.01" max="10" placeholder="e.g. 5.1" required />
+          </div>
+          <div class="field">
+            <label for="sepal_width">Sepal Width <span class="unit">(cm)</span></label>
+            <input type="number" id="sepal_width" step="0.01" min="0.01" max="10" placeholder="e.g. 3.5" required />
+          </div>
+          <div class="field">
+            <label for="petal_length">Petal Length <span class="unit">(cm)</span></label>
+            <input type="number" id="petal_length" step="0.01" min="0.01" max="10" placeholder="e.g. 1.4" required />
+          </div>
+          <div class="field">
+            <label for="petal_width">Petal Width <span class="unit">(cm)</span></label>
+            <input type="number" id="petal_width" step="0.01" min="0.01" max="10" placeholder="e.g. 0.2" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="version">API Version</label>
+          <select id="version" style="width:100%;padding:0.7rem 0.9rem;border:2px solid var(--border);border-radius:10px;font-size:1rem;">
+            <option value="v1">v1 - Confidence score</option>
+            <option value="v2">v2 - Full probability breakdown</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn">Predict Species</button>
+      </form>
+
+      <div class="error" id="error-box"></div>
+    </div>
+
+    <div class="card result" id="result-card">
+      <h2>Prediction Result</h2>
+      <div class="species" id="result-species"></div>
+      <div class="confidence-bar">
+        <div class="confidence-fill" id="confidence-fill"></div>
+      </div>
+      <div class="confidence-label" id="confidence-label"></div>
+
+      <div class="probs" id="probs-section" style="display:none;">
+        <h3>Probability breakdown</h3>
+        <div id="probs-list"></div>
+      </div>
+
+      <div class="info-grid">
+        <div class="item"><div class="k">Model Version</div><div class="v" id="info-version"></div></div>
+        <div class="item"><div class="k">Request ID</div><div class="v" id="info-request-id" style="font-size:0.7rem;word-break:break-all;"></div></div>
+      </div>
+
+      <button class="btn secondary" onclick="document.getElementById('result-card').classList.remove('show')">Predict Again</button>
+    </div>
+  </div>
+
+  <footer>ModelForge API &middot; Iris species classifier</footer>
+
+  <script>
+    const form = document.getElementById('predict-form');
+    const errorBox = document.getElementById('error-box');
+    const resultCard = document.getElementById('result-card');
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.classList.add('show');
+      resultCard.classList.remove('show');
+    }
+
+    function clearError() {
+      errorBox.classList.remove('show');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+
+      const apiKey = document.getElementById('api_key').value.trim();
+      const version = document.getElementById('version').value;
+      const payload = {
+        sepal_length: parseFloat(document.getElementById('sepal_length').value),
+        sepal_width: parseFloat(document.getElementById('sepal_width').value),
+        petal_length: parseFloat(document.getElementById('petal_length').value),
+        petal_width: parseFloat(document.getElementById('petal_width').value)
+      };
+
+      if (!apiKey) { showError('Please enter your API key.'); return; }
+
+      try {
+        const resp = await fetch('/api/' + version + '/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          const detail = data.detail || data.error || ('Request failed with status ' + resp.status);
+          showError(detail);
+          return;
+        }
+
+        document.getElementById('result-species').textContent = data.flower;
+        document.getElementById('info-version').textContent = data.model_version || '-';
+        document.getElementById('info-request-id').textContent = data.request_id || '-';
+
+        const probsSection = document.getElementById('probs-section');
+        const probsList = document.getElementById('probs-list');
+
+        if (data.probabilities) {
+          probsSection.style.display = 'block';
+          document.getElementById('confidence-fill').style.width = '0%';
+          document.getElementById('confidence-label').textContent = 'See breakdown below';
+
+          probsList.innerHTML = '';
+          const entries = Object.entries(data.probabilities).sort((a, b) => b[1] - a[1]);
+          entries.forEach(([name, prob]) => {
+            const pct = (prob * 100).toFixed(1);
+            const row = document.createElement('div');
+            row.className = 'prob-row';
+            row.innerHTML = '<span class="name">' + name + '</span><span class="bar"><span style="width:' + pct + '%"></span></span><span class="pct">' + pct + '%</span>';
+            probsList.appendChild(row);
+          });
+        } else {
+          probsSection.style.display = 'none';
+          const conf = (data.confidence * 100).toFixed(1);
+          setTimeout(() => {
+            document.getElementById('confidence-fill').style.width = conf + '%';
+          }, 50);
+          document.getElementById('confidence-label').textContent = 'Confidence: ' + conf + '%';
+        }
+
+        resultCard.classList.add('show');
+      } catch (err) {
+        showError('Could not reach the API. Make sure the server is running.');
+      }
+    });
+  </script>
+</body>
+</html>

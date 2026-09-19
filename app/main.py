@@ -5,7 +5,8 @@ from prometheus_fastapi_instrumentator import Instrumentator
 import joblib
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sklearn.datasets import load_iris
 
 from app.config import settings
@@ -101,12 +102,14 @@ async def log_requests(request: Request, call_next):
         raise
 
 
-# Root endpoint
+# Mount static files (CSS, JS, images)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+# Root endpoint - serves the web UI
 @app.get("/")
 def root():
-    return {
-        "message": "ML API is alive"
-    }
+    return FileResponse("app/static/index.html")
 
 
 # Custom handler for ValueError
@@ -129,3 +132,13 @@ app.include_router(v1_router)
 
 # Include version 2 API routes
 app.include_router(v2_router)
+
+
+# Health-only JSON endpoint (kept for API clients)
+@app.get("/api")
+def api_info():
+    return {
+        "message": "ML API is alive",
+        "docs": "/docs",
+        "ui": "/"
+    }
